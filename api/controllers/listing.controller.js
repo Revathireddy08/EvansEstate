@@ -90,21 +90,78 @@ export const getListings = async (req, res, next) => {
       type = {$in: ['sale', 'rent']}
     }
 
-    const searchTerm = req.query.searchTerm || '';
+const searchTerm = req.query.searchTerm || "";
+const cleanedSearch = searchTerm
+  .toLowerCase()
+  .replace("near", "")
+  .replace("homes", "")
+  .replace("house", "")
+  .replace("property", "")
+  .replace("properties", "")
+  .replace("cheap", "");
 
+const words = cleanedSearch.trim().split(/\s+/);
+let locationKeyword = null;
+let maxPrice = null;
+let bedrooms = null;
+let furnishedFilter = null;
+let parkingFilter = null;
+let offerFilter = null;
+
+// detect keywords
+words.forEach((word, index) => {
+
+  // price detection (under 20000)
+  if (word === "under" && words[index + 1]) {
+    maxPrice = parseInt(words[index + 1]);
+  }
+
+  // bedrooms detection (2bhk or 3bhk)
+  if (word.includes("bhk") || words[index + 1] === "bhk") {
+  bedrooms = parseInt(word);
+}
+
+  if (word === "furnished") {
+    furnishedFilter = true;
+  }
+
+  if (word === "parking") {
+    parkingFilter = true;
+  }
+
+  if (word === "offer") {
+    offerFilter = true;
+  }
+
+ if (
+  !["under","bhk","furnished","parking","offer","rent","sale"].includes(word) &&
+  isNaN(word)
+) {
+  locationKeyword = word;
+}
+});
     const sort = req.query.sort || 'createdAt';
 
     const order = req.query.order || 'desc';
 
     const listings = await Listing.find({
-      name: {$regex: searchTerm, $options: 'i'},
-      offer,
-      furnished,
-      parking,
-      type
-    }).sort({
-      [sort]: order
-    }).limit(limit).skip(startIndex)
+  $or: [
+    { name: { $regex: searchTerm, $options: "i" } },
+    { address: { $regex: locationKeyword || searchTerm, $options: "i" } },
+    { description: { $regex: searchTerm, $options: "i" } },
+  ],
+
+  ...(maxPrice && { regularPrice: { $lte: maxPrice } }),
+  ...(bedrooms && { bedrooms }),
+  ...(furnishedFilter !== null && { furnished: furnishedFilter }),
+  ...(parkingFilter !== null && { parking: parkingFilter }),
+  ...(offerFilter !== null && { offer: offerFilter }),
+
+  type,
+})
+.sort({ [sort]: order })
+.limit(limit)
+.skip(startIndex);
 
     return res.status(200).json(listings)
     

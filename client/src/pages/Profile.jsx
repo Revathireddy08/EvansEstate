@@ -29,7 +29,7 @@ export default function Profile() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
-
+const [showPassword, setShowPassword] = useState(false);
   // console.log('ican', formData);
 
   const [successMessage, setSuccessMessage] = useState("");
@@ -107,7 +107,7 @@ export default function Profile() {
   // const handleDeleteUser = async () => {
   //   try {
   //     dispatch(deleteUserStart());
-  //     const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+  //     const res = await fetch(`http://localhost:5000/api/user/delete/${currentUser._id}`, {
   //       method: "DELETE",
   //     });
 
@@ -124,27 +124,25 @@ export default function Profile() {
   // };
 
   const handleDeleteUser = async () => {
-    try {
-      dispatch(deleteUserStart());
-      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-        method: "DELETE",
-      });
-  
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
-        return;
-      }
-  
-      dispatch(deleteUserSuccess(data));
-      setSuccessMessage("User has been deleted successfully!");
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
-    } catch (error) {
-      dispatch(deleteUserFailure(error.message));
+  try {
+    dispatch(deleteUserStart());
+    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    const data = await res.json();
+    if (data.success === false) {
+      dispatch(deleteUserFailure(data.message));
+      return;
     }
-  };
+
+    dispatch(deleteUserSuccess(data));
+    setSuccessMessage("User has been deleted successfully!");
+  } catch (error) {
+    dispatch(deleteUserFailure(error.message));
+  }
+};
   
 
   const handleSignOut = async () => {
@@ -186,7 +184,7 @@ export default function Profile() {
 
   // const handleListingDelete = async (listingId) => {
   //   try {
-  //     const res = await fetch(`/api/listing/delete/${listingId}`, {
+  //     const res = await fetch(`http://localhost:5000/api/listing/delete/${listingId}`, {
   //       method: "DELETE",
   //     });
   //     const data = await res.json();
@@ -267,8 +265,7 @@ export default function Profile() {
           placeholder="username"
           className="border p-3 rounded-lg"
           id="username"
-          defaultValue={currentUser.username}
-          onChange={handleChange}
+defaultValue={currentUser.username || currentUser.name}          onChange={handleChange}
         />
         <input
           type="email"
@@ -278,15 +275,7 @@ export default function Profile() {
           defaultValue={currentUser.email}
           onChange={handleChange}
         />
-        <input
-          type="password"
-          placeholder="password"
-          className="border p-3 rounded-lg"
-          id="password"
-          defaultValue={currentUser.password}
-          onChange={handleChange}
-        />
-
+        
         <button
           disabled={loading}
           className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80"

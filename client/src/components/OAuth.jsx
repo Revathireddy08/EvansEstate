@@ -1,57 +1,70 @@
-import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth'
-import { app } from '../firebase';
-import { useDispatch } from 'react-redux';
-import { signInSuccess } from '../redux/user/userSlice';
-import { useNavigate } from 'react-router';
-
+import { GoogleAuthProvider, getAuth, signInWithPopup,signOut } from "firebase/auth";
+import { app } from "../firebase";
+import { useDispatch } from "react-redux";
+import { signInSuccess } from "../redux/user/userSlice";
+import { useNavigate } from "react-router";
 
 
 export default function OAuth() {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleGoogleClick = async () => {
-    try {
-      const provider = new GoogleAuthProvider()
-      const auth = getAuth(app)
+  try {
+    const auth = getAuth(app);
 
-      const result = await signInWithPopup(auth, provider)
+    // clear previous login
+    await signOut(auth);
 
-      const res = await fetch('/api/auth/google', {
+    const provider = new GoogleAuthProvider();
 
-        method: 'POST',
+    provider.setCustomParameters({
+      prompt: "select_account",
+    });
+
+    const result = await signInWithPopup(auth, provider);
+      console.log(result.user.displayName, result.user.email);
+
+      // Send data to backend
+      const res = await fetch("http://localhost:5000/api/auth/google", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: result.user.displayName,
           email: result.user.email,
-          photo: result.user.photoURL
-        })
-      })
+          photo: result.user.photoURL,
+        }),
+        credentials: "include",
+      });
 
       const data = await res.json();
-      dispatch(signInSuccess(data))
-      navigate('/')
+      console.log("Backend response:", data);
 
+      // Save user in redux
+      dispatch(
+  signInSuccess({
+    _id: data._id,
+    name: result.user.displayName,   // change here
+    email: result.user.email,        // change here
+    avatar: result.user.photoURL,    // change here
+  })
+);
+
+      navigate("/");
     } catch (error) {
-      console.log('could not sign in with google', error);
+      console.log("Could not sign in with Google", error);
     }
-  }
+  };
 
   return (
     <button
       onClick={handleGoogleClick}
       type="button"
-      className="
-        bg-red-700 
-        text-white 
-        p-3 
-        rounded-lg 
-        uppercase 
-        hover:opacity-50"
+      className="bg-red-700 text-white p-3 rounded-lg uppercase hover:opacity-50"
     >
-      Continue with google
+      Continue with Google
     </button>
-  )
+  );
 }
