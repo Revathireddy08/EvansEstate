@@ -26,7 +26,7 @@ export default function OAuth() {
       console.log(result.user.displayName, result.user.email);
 
       // Send data to backend
-      const res = await fetch("http://localhost:5000/api/auth/google", {
+      const res = await fetch("https://evansestate.onrender.com/api/auth/google", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,11 +45,11 @@ export default function OAuth() {
       // Save user in redux
       dispatch(
   signInSuccess({
-    _id: data._id,
-    name: result.user.displayName,   // change here
-    email: result.user.email,        // change here
-    avatar: result.user.photoURL,    // change here
-  })
+  _id: data._id || data.user?._id,
+  name: data.name || result.user.displayName,
+  email: data.email || result.user.email,
+  avatar: data.avatar || result.user.photoURL,
+})
 );
 
       navigate("/");

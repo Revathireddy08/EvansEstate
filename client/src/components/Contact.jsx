@@ -12,8 +12,7 @@ export default function Contact({ listing }) {
   useEffect(() => {
     const fetchLandlord = async () => {
       try {
-const res = await fetch(`http://localhost:5000/api/user/${listing.userRef}`, {
-  credentials: "include",
+const res = await fetch(`https://evansestate.onrender.com/api/user/${listing.userRef}`, {  credentials: "include",
 });        const data = await res.json();
         setLandlord(data);
       } catch (error) {
@@ -21,8 +20,7 @@ const res = await fetch(`http://localhost:5000/api/user/${listing.userRef}`, {
       }
     };
     fetchLandlord();
-  }, [listing.userRef]);
-
+}, [listing?.userRef]);
   const mailLink = landlord
     ? `mailto:${landlord.email}?subject=${encodeURIComponent(
         `Regarding ${listing.name}`

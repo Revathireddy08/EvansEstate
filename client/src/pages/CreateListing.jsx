@@ -134,7 +134,7 @@
 //   const handleFormSumbit = async (e) => {
 //     e.preventDefault();
 //   const api = axios.create({
-//   baseURL: "http://localhost:5000/api",
+//   baseURL: "https://evansestate.onrender.com/api",
 //   withCredentials: true   
 // });
 //     try {
@@ -413,7 +413,7 @@ import axios from "axios";
 
 // Create axios instance outside component to avoid recreating on each render
 const api = axios.create({
-  baseURL: "/api",
+baseURL: "https://mern-estate-backend-iz4a.onrender.com/api",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

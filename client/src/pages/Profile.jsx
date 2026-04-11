@@ -22,6 +22,7 @@ export default function Profile() {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector((state) => state.user);
+
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
@@ -29,10 +30,9 @@ export default function Profile() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
-const [showPassword, setShowPassword] = useState(false);
-  // console.log('ican', formData);
-
   const [successMessage, setSuccessMessage] = useState("");
+
+  const API = "https://evansestate.onrender.com";
 
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
@@ -50,47 +50,46 @@ const [showPassword, setShowPassword] = useState(false);
       },
       () => {
         setFileUploadError(true);
-        setSuccessMessage("");
-        setTimeout(() => {
-          setFileUploadError(false);
-        }, 5000);
+        setTimeout(() => setFileUploadError(false), 5000);
       },
       () => {
-        // Upload completed successfully, handle any additional logic here
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setFormData({ ...formData, avatar: downloadURL });
           setFileUploadError(false);
           setSuccessMessage("Image successfully uploaded!");
-          setTimeout(() => {
-            setSuccessMessage("");
-          }, 5000);
+          setTimeout(() => setSuccessMessage(""), 5000);
         });
       }
     );
   };
 
   useEffect(() => {
-    if (file) {
-      handleFileUpload(file);
-    }
+    if (file) handleFileUpload(file);
   }, [file]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
+  // ✅ FIXED UPDATE USER (METHOD ADDED)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+
+      const res = await fetch(
+        `${API}/api/user/update/${currentUser._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
       const data = await res.json();
+
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
@@ -103,72 +102,60 @@ const [showPassword, setShowPassword] = useState(false);
     }
   };
 
-  // Handle Delete User
-  // const handleDeleteUser = async () => {
-  //   try {
-  //     dispatch(deleteUserStart());
-  //     const res = await fetch(`http://localhost:5000/api/user/delete/${currentUser._id}`, {
-  //       method: "DELETE",
-  //     });
-
-  //     const data = await res.json();
-  //     if (data.success === false) {
-  //       dispatch(deleteUserFailure(data.message));
-  //       return;
-  //     }
-
-  //     dispatch(deleteUserSuccess(data));
-  //   } catch (error) {
-  //     dispatch(deleteUserFailure(error.message));
-  //   }
-  // };
-
   const handleDeleteUser = async () => {
-  try {
-    dispatch(deleteUserStart());
-    const res = await fetch(`/api/user/delete/${currentUser._id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-
-    const data = await res.json();
-    if (data.success === false) {
-      dispatch(deleteUserFailure(data.message));
-      return;
-    }
-
-    dispatch(deleteUserSuccess(data));
-    setSuccessMessage("User has been deleted successfully!");
-  } catch (error) {
-    dispatch(deleteUserFailure(error.message));
-  }
-};
-  
-
-  const handleSignOut = async () => {
     try {
-      dispatch(signOutUserStart());
-      const res = await fetch("/api/auth/signout");
+      dispatch(deleteUserStart());
+
+      const res = await fetch(
+        `${API}/api/user/delete/${currentUser._id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
       const data = await res.json();
-      // Handle success or error response as needed
+
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
+
       dispatch(deleteUserSuccess(data));
+      setSuccessMessage("User has been deleted successfully!");
     } catch (error) {
-      // Handle fetch error
       dispatch(deleteUserFailure(error.message));
     }
   };
 
-  // HANDLE SHOW LISTINGS
+  const handleSignOut = async () => {
+    try {
+      dispatch(signOutUserStart());
+
+      const res = await fetch(`${API}/api/auth/signout`);
+      const data = await res.json();
+
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
 
   const handleShowListings = async () => {
     try {
       setShowListingsError(false);
-      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+
+      const res = await fetch(
+        `${API}/api/user/listings/${currentUser._id}`
+      );
+
       const data = await res.json();
+
       if (data.success === false) {
         setShowListingsError(true);
         return;
@@ -180,50 +167,30 @@ const [showPassword, setShowPassword] = useState(false);
     }
   };
 
-  // HANDLE DELETE LISTING
-
-  // const handleListingDelete = async (listingId) => {
-  //   try {
-  //     const res = await fetch(`http://localhost:5000/api/listing/delete/${listingId}`, {
-  //       method: "DELETE",
-  //     });
-  //     const data = await res.json();
-  //     if (data.success === false) {
-  //       console.log(data.message);
-  //       return;
-  //     }
-
-  //     setUserListings((prev) =>
-  //       prev.filter((listing) => listing._id !== listingId)
-  //     );
-  //   } catch (error) {
-  //     console.log(error.message);
-  //   }
-  // };
-
   const handleListingDelete = async (listingId) => {
     try {
-      const res = await fetch(`/api/listing/delete/${listingId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${API}/api/listing/delete/${listingId}`,
+        { method: "DELETE" }
+      );
+
       const data = await res.json();
+
       if (data.success === false) {
         console.log(data.message);
         return;
       }
-  
+
       setUserListings((prev) =>
         prev.filter((listing) => listing._id !== listingId)
       );
+
       setSuccessMessage("Listing deleted successfully!");
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
+      setTimeout(() => setSuccessMessage(""), 5000);
     } catch (error) {
       console.log(error.message);
     }
   };
-  
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -245,116 +212,73 @@ const [showPassword, setShowPassword] = useState(false);
           className="rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2"
         />
 
-        <p className="text-sm self-center">
-          {fileUploadError ? (
-            <span className="text-red-700">
-              {" "}
-              Image Upload Error (Must be less than 2MB)
-            </span>
-          ) : filePerc > 0 && filePerc < 100 ? (
-            <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
-          ) : filePerc === 100 ? (
-            <span className="text-green-700">{successMessage}</span>
-          ) : (
-            ""
-          )}
-        </p>
-
         <input
           type="text"
-          placeholder="username"
-          className="border p-3 rounded-lg"
           id="username"
-defaultValue={currentUser.username || currentUser.name}          onChange={handleChange}
-        />
-        <input
-          type="email"
-          placeholder="email"
+          defaultValue={currentUser.username || currentUser.name}
           className="border p-3 rounded-lg"
-          id="email"
-          defaultValue={currentUser.email}
           onChange={handleChange}
         />
-        
+
+        <input
+          type="email"
+          id="email"
+          defaultValue={currentUser.email}
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
+        />
+
         <button
           disabled={loading}
-          className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80"
+          className="bg-slate-700 text-white p-3 rounded-lg uppercase"
         >
           {loading ? "Loading..." : "Update"}
         </button>
 
         <Link
-          className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95"
-          to={"/create-listing"}
+          to="/create-listing"
+          className="bg-green-700 text-white p-3 rounded-lg text-center"
         >
           Create Listing
         </Link>
       </form>
 
       <div className="flex justify-between mt-5">
-        <span
-          onClick={handleDeleteUser}
-          className="text-red-700 cursor-pointer"
-        >
+        <span onClick={handleDeleteUser} className="text-red-700 cursor-pointer">
           Delete Account
         </span>
         <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
           Sign Out
         </span>
-
       </div>
 
-      <p className="text-red-700 mt-5">{error ? error : ""}</p>
-      <p className="text-green-700">
-        {updateSuccess ? "User is successfully updated!" : ""}
-      </p>
-      <p className="text-green-700">{successMessage}</p>
-
-      <button className="text-green-700 w-full" onClick={handleShowListings}>
+      <button className="text-green-700 w-full mt-5" onClick={handleShowListings}>
         Show Listings
       </button>
-      <p className="text-red-700 mt-5">
-        {showListingsError ? "Error showing listings" : ""}
-      </p>
 
-      {userListings && (
-        <div className="flex flex-col gap-4">
-          <h1 className="text-center mt-7 text-2xl font-semibold">
-            Your Listings
-          </h1>
-          {userListings.length > 0 &&
-            userListings.map((listing) => (
-              <div
-                key={listing._id}
-                className="border rounded-lg p-3 flex justify-between items-center gap-4"
-              >
-                <Link to={`/listing/${listing._id}`}>
-                  <img
-                    src={listing.imageUrls[0]}
-                    alt="Listing cover"
-                    className="h-16 w-16 object-contain"
-                  />
-                </Link>
-                <Link to={`/listing/${listing._id}`}>
-                  <p className="">{listing.name}</p>
-                </Link>
+      {userListings.map((listing) => (
+        <div
+          key={listing._id}
+          className="border p-3 flex justify-between mt-4"
+        >
+          <img
+            src={listing.imageUrls[0]}
+            className="w-16 h-16 object-cover"
+          />
 
-                <div className="flex flex-col items-center">
-                  <button
-                    onClick={() => handleListingDelete(listing._id)}
-                    className="text-red-700 uppercase"
-                  >
-                    Delete
-                  </button>
-                  <Link to={`/update-listing/${listing._id}`}>
-                    <button className="text-green-700 uppercase">Edit</button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-            <p className="text-green-700">{successMessage}</p>
+          <p>{listing.name}</p>
+
+          <button
+            onClick={() => handleListingDelete(listing._id)}
+            className="text-red-700"
+          >
+            Delete
+          </button>
         </div>
-      )}
+      ))}
+
+      <p className="text-green-700">{successMessage}</p>
+      <p className="text-red-700">{error}</p>
     </div>
   );
 }

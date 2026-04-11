@@ -54,7 +54,7 @@ export default function Search() {
       setLoading(true);
       setShowMore(false);
       const searchQuery = urlParams.toString();
-      const res = await fetch(`/api/listing/get?${searchQuery}`);
+      const res = await fetch(`https://evansestate.onrender.com/api/listing/get?${searchQuery}`)
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setListings(data);
@@ -123,7 +123,7 @@ export default function Search() {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", startIndex);
     const searchQuery = urlParams.toString();
-    const res = await fetch(`/api/listing/get?${searchQuery}`);
+     const res = await fetch(`https://evansestate.onrender.com/api/listing/get?${searchQuery}`);
     const data = await res.json();
     if (data.length < 9) {
       setShowMore(false);

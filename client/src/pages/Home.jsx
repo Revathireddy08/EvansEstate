@@ -12,40 +12,29 @@ export default function Home() {
   const [rentListings, setRentListings] = useState([]);
   SwiperCore.use([Navigation]);
 
-  useEffect(() => {
-    const fetchOfferListings = async () => {
-      try {
-        const res = await fetch("/api/listing/get?offer=true&limit=4");
-        const data = await res.json();
-        setOfferListings(data);
-        fetchRentListings();
-      } catch (error) {
-        console.log(error);
-      }
-    };
+useEffect(() => {
+  const fetchListings = async () => {
+    try {
+      const [offerRes, rentRes, saleRes] = await Promise.all([
+        fetch("https://evansestate.onrender.com/api/listing/get?offer=true&limit=4"),
+        fetch("https://evansestate.onrender.com/api/listing/get?type=rent&limit=4"),
+        fetch("https://evansestate.onrender.com/api/listing/get?type=sale&limit=4"),
+      ]);
 
-    const fetchRentListings = async () => {
-      try {
-        const res = await fetch("/api/listing/get?type=rent&limit=4");
-        const data = await res.json();
-        setRentListings(data);
-        fetchSaleListings();
-      } catch (error) {
-        console.log(error);
-      }
-    };
+      const offerData = await offerRes.json();
+      const rentData = await rentRes.json();
+      const saleData = await saleRes.json();
 
-    const fetchSaleListings = async () => {
-      try {
-        const res = await fetch("/api/listing/get?type=sale&limit=4");
-        const data = await res.json();
-        setSaleListings(data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchOfferListings();
-  }, []);
+      setOfferListings(offerData);
+      setRentListings(rentData);
+      setSaleListings(saleData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchListings();
+}, []);
 
   return (
     <div>
