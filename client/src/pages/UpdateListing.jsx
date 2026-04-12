@@ -33,6 +33,7 @@ export default function UpdateListing() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
 
   useEffect(() => {
@@ -181,11 +182,20 @@ const res = await fetch(
 );
 
       const data = await res.json();
-      setLoading(false);
-      if (data.success === false) {
-        setError(data.message);
-      }
-      navigate(`/listing/${data._id}`)
+setLoading(false);
+
+if (data.success === false) {
+  setError(data.message);
+  return;
+}
+
+setError(false);
+setSuccess(true);
+
+// show success then redirect
+setTimeout(() => {
+  navigate(`/listing/${data._id}`);
+}, 1500);
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -416,6 +426,11 @@ const res = await fetch(
             {loading ? "Updating..." : "Update Listing"}
           </button>
           {error && <p className="text-red-700 text-sm">{error}</p>}
+          {success && (
+  <p className="text-green-700 text-sm">
+    Listing updated successfully!
+  </p>
+)}
         </div>
       </form>
     </main>
