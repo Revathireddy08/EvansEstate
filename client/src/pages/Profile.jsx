@@ -31,7 +31,7 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
-
+const [showListings, setShowListings] = useState(false);
 const API = "https://evansestate.onrender.com";
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
@@ -72,35 +72,45 @@ const API = "https://evansestate.onrender.com";
 
   // ✅ FIXED UPDATE USER (METHOD ADDED)
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      dispatch(updateUserStart());
+  e.preventDefault();
 
-      const res = await fetch(`${API}/api/user/update/${currentUser._id}`, {
-  method: "PUT",
-  credentials: "include",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify(formData),
-});
+  const confirmUpdate = window.confirm("Are you sure you want to update profile?");
+  if (!confirmUpdate) return;
 
-      const data = await res.json();
+  try {
+    dispatch(updateUserStart());
 
-      if (data.success === false) {
-        dispatch(updateUserFailure(data.message));
-        return;
-      }
+    const res = await fetch(`${API}/api/user/update/${currentUser._id}`, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-      dispatch(updateuserSuccess(data));
-      setUpdateSuccess(true);
-    } catch (error) {
-      dispatch(updateUserFailure(error.message));
+    const data = await res.json();
+
+    if (!res.ok) {
+      dispatch(updateUserFailure(data.message));
+      return;
     }
-  };
 
-  const handleDeleteUser = async () => {
-    try {
+    dispatch(updateuserSuccess(data));
+setUpdateSuccess(true);
+
+setSuccessMessage("Profile updated successfully!");
+setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (error) {
+    dispatch(updateUserFailure(error.message));
+  }
+};
+
+const handleDeleteUser = async () => {
+  const confirmDelete = window.confirm("Are you sure you want to delete your account?");
+  if (!confirmDelete) return;
+
+      try {
       dispatch(deleteUserStart());
 
       const res = await fetch(
@@ -118,15 +128,21 @@ const API = "https://evansestate.onrender.com";
         return;
       }
 
-      dispatch(deleteUserSuccess(data));
+dispatch(deleteUserSuccess(data));
+
+setSuccessMessage("User has been deleted successfully!");
+setTimeout(() => setSuccessMessage(""), 3000);
       setSuccessMessage("User has been deleted successfully!");
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
   };
 
-  const handleSignOut = async () => {
-    try {
+const handleSignOut = async () => {
+  const confirmLogout = window.confirm("Are you sure you want to sign out?");
+  if (!confirmLogout) return;
+
+      try {
       dispatch(signOutUserStart());
 
 const res = await fetch(`${API}/api/auth/signout`, {
@@ -138,13 +154,20 @@ const res = await fetch(`${API}/api/auth/signout`, {
         return;
       }
 
-      dispatch(deleteUserSuccess(data));
+dispatch(deleteUserSuccess(data));
+
+setSuccessMessage("Signed out successfully!");
+setTimeout(() => setSuccessMessage(""), 3000); 
+
+setSuccessMessage("Signed out successfully!");
+setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
   };
 
   const handleShowListings = async () => {
+     setShowListings(true);
     try {
       setShowListingsError(false);
 
@@ -168,8 +191,11 @@ const res = await fetch(`${API}/api/auth/signout`, {
     }
   };
 
-  const handleListingDelete = async (listingId) => {
-    try {
+const handleListingDelete = async (listingId) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this listing?");
+  if (!confirmDelete) return;
+
+      try {
       const res = await fetch(
   `${API}/api/listing/delete/${listingId}`,
   {
@@ -260,27 +286,50 @@ const res = await fetch(`${API}/api/auth/signout`, {
         Show Listings
       </button>
 
-      {userListings.map((listing) => (
+{showListings && (
+  <>
+    {showListingsError ? (
+      <p className="text-red-500 text-center mt-4">
+        Failed to load listings
+      </p>
+    ) : userListings.length === 0 ? (
+      <p className="text-gray-500 text-center mt-4">
+        No listings created yet
+      </p>
+    ) : (
+      userListings.map((listing) => (
         <div
           key={listing._id}
-          className="border p-3 flex justify-between mt-4"
+          className="border p-3 flex justify-between mt-4 items-center"
         >
           <img
             src={listing.imageUrls[0]}
-            className="w-16 h-16 object-cover"
+            className="w-16 h-16 object-cover rounded"
+            alt="listing"
           />
 
-          <p>{listing.name}</p>
+          <p className="flex-1 ml-3">{listing.name}</p>
 
-          <button
-            onClick={() => handleListingDelete(listing._id)}
-            className="text-red-700"
-          >
-            Delete
-          </button>
+          <div className="flex gap-3">
+            <Link
+              to={`/update-listing/${listing._id}`}
+              className="text-green-700"
+            >
+              Edit
+            </Link>
+
+            <button
+              onClick={() => handleListingDelete(listing._id)}
+              className="text-red-700"
+            >
+              Delete
+            </button>
+          </div>
         </div>
-      ))}
-
+      ))
+    )}
+  </>
+)}
       <p className="text-green-700">{successMessage}</p>
       <p className="text-red-700">{error}</p>
     </div>
