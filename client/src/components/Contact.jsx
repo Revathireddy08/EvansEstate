@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-
+import { useSelector } from "react-redux";
 export default function Contact({ listing }) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState('');
-
+const { currentUser } = useSelector((state) => state.user);
   const onChange = (e) => {
     setMessage(e.target.value);
   };
@@ -21,53 +21,48 @@ const res = await fetch(`https://evansestate.onrender.com/api/user/${listing.use
     };
     fetchLandlord();
 }, [listing?.userRef]);
-  const mailLink = landlord
-    ? `mailto:${landlord.email}?subject=${encodeURIComponent(
-        `Regarding ${listing.name}`
-      )}&body=${encodeURIComponent(message)}`
-    : '#';
-
+  const mailLink = landlord?.email
+  ? `mailto:${landlord.email}?subject=${encodeURIComponent(
+      `Regarding ${listing?.name}`
+    )}&body=${encodeURIComponent(message)}`
+  : "#";
   return (
-    <>
-      {landlord && (
-        <div className="flex flex-col gap-2">
-          <p>
-            Contact{' '}
-            <span className="font-semibold">
-              {landlord.username || landlord.name}
-            </span>{' '}
-            for{' '}
-            <span className="font-semibold">
-              {listing.name.toLowerCase()}
-            </span>
-          </p>
+  <>
+    {!currentUser ? (
+      <p className="text-center text-red-600 font-semibold">
+        Login to contact landlord
+      </p>
+    ) : landlord ? (
+      <div className="flex flex-col gap-2">
+        <p>
+          Contact{" "}
+          <span className="font-semibold">
+            {landlord.username || landlord.name}
+          </span>{" "}
+          for{" "}
+          <span className="font-semibold">
+            {listing?.name?.toLowerCase()}
+          </span>
+        </p>
 
-          <textarea
-            name="message"
-            id="message"
-            rows="2"
-            value={message}
-            onChange={onChange}
-            placeholder="Enter your message here..."
-            className="w-full border p-3 rounded-lg"
-          ></textarea>
+        <textarea
+          rows="2"
+          value={message}
+          onChange={onChange}
+          placeholder="Enter your message here..."
+          className="w-full border p-3 rounded-lg"
+        />
 
-          <a
-            href={landlord?.email ? mailLink : '#'}
-            className="bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95"
-            onClick={(e) => {
-              if (!landlord?.email) {
-                e.preventDefault();
-                alert("Email not loaded yet. Please wait.");
-              }
-            }}
-          >
-            Send Message
-          </a>
-        </div>
-      )}
-    </>
-  );
+        <a
+          href={mailLink}
+          className="bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95"
+        >
+          Send Message
+        </a>
+      </div>
+    ) : null}
+  </>
+);
 }
 
 Contact.propTypes = {

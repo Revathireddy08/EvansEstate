@@ -32,8 +32,7 @@ export default function Profile() {
   const [userListings, setUserListings] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const API = "https://evansestate.onrender.com";
-
+const API = "https://evansestate.onrender.com";
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + file.name;
@@ -77,16 +76,14 @@ export default function Profile() {
     try {
       dispatch(updateUserStart());
 
-      const res = await fetch(
-        `${API}/api/user/update/${currentUser._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const res = await fetch(`${API}/api/user/update/${currentUser._id}`, {
+  method: "PUT",
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(formData),
+});
 
       const data = await res.json();
 
@@ -132,8 +129,9 @@ export default function Profile() {
     try {
       dispatch(signOutUserStart());
 
-      const res = await fetch(`${API}/api/auth/signout`);
-      const data = await res.json();
+const res = await fetch(`${API}/api/auth/signout`, {
+  credentials: "include",
+});      const data = await res.json();
 
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
@@ -151,8 +149,11 @@ export default function Profile() {
       setShowListingsError(false);
 
       const res = await fetch(
-        `${API}/api/user/listings/${currentUser._id}`
-      );
+  `${API}/api/user/listings/${currentUser._id}`,
+  {
+    credentials: "include",
+  }
+);
 
       const data = await res.json();
 
@@ -170,9 +171,12 @@ export default function Profile() {
   const handleListingDelete = async (listingId) => {
     try {
       const res = await fetch(
-        `${API}/api/listing/delete/${listingId}`,
-        { method: "DELETE" }
-      );
+  `${API}/api/listing/delete/${listingId}`,
+  {
+    method: "DELETE",
+    credentials: "include",
+  }
+);
 
       const data = await res.json();
 

@@ -39,8 +39,11 @@ export default function UpdateListing() {
     const fetchListing = async () => {
       const listingId  = params.listingId;
 const res = await fetch(
-  `https://evansestate.onrender.com/api/listing/get/${listingId}`
-);      const data = await res.json();
+  `https://evansestate.onrender.com/api/listing/get/${listingId}`,
+  {
+    credentials: "include",
+  }
+);;      const data = await res.json();
       if(data.success === false){
         console.log(data.message);
         return;
@@ -166,6 +169,7 @@ const res = await fetch(
   `https://evansestate.onrender.com/api/listing/update/${params.listingId}`,
   {
     method: "PUT",
+    credentials: "include",   // 👈 ADD THIS ONLY
     headers: {
       "Content-Type": "application/json",
     },

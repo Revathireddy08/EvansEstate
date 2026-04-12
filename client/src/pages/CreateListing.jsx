@@ -400,25 +400,12 @@
 
 
 import { useState } from "react";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase.js";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // Create axios instance outside component to avoid recreating on each render
-const api = axios.create({
-baseURL: "https://mern-estate-backend-iz4a.onrender.com/api",
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+
 
 export default function CreateListing() {
   const { currentUser } = useSelector((state) => state.user);
@@ -581,11 +568,16 @@ export default function CreateListing() {
       });
 
       // Make the API request
-      const response = await axios.post("/api/listing/create", {
-        ...formData,
-        userRef: currentUser._id,
-      });
-
+      const response = await axios.post(
+  "https://evansestate.onrender.com/api/listing/create",
+  {
+    ...formData,
+    userRef: currentUser._id,
+  },
+  {
+    withCredentials: true,
+  }
+);
       console.log("Create listing response:", response.data);
       
       // Navigate to the new listing page
