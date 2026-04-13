@@ -29,7 +29,7 @@ const [showPassword, setShowPassword] = useState(false);
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          credentilas: "include"
+          credentials: "include"
         },
         body: JSON.stringify(formData),
       });
