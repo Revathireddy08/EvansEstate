@@ -48,6 +48,7 @@ const res = await fetch(`https://evansestate.onrender.com/api/listing/get/${para
     };
 
     fetchListing();
+
   }, [params.listingId]);
 
 
@@ -141,8 +142,7 @@ const res = await fetch(`https://evansestate.onrender.com/api/listing/get/${para
                 {listing.furnished ? "Furnished" : "Unfurnished"}
               </li>
             </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && (
-              <button
+{currentUser && listing.userRef !== currentUser._id && !contact && (                <button
                 onClick={() => setContact(true)}
                 className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3"
               >
