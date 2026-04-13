@@ -24,8 +24,12 @@ export default function Profile() {
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector((state) => state.user);
 
-if (!currentUser?._id && !currentUser?.id) {
-  return <div>Loading...</div>;
+if (!currentUser) {
+  return (
+    <div className="text-center mt-10 text-gray-500">
+      Please sign in to view profile
+    </div>
+  );
 }
   const userId = currentUser?._id || currentUser?.id;
 
@@ -160,6 +164,7 @@ if (!currentUser?._id && !currentUser?.id) {
       }
 
 dispatch(signOutUserSuccess());
+navigate("/signin");
       setSuccessMessage("Signed out successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
