@@ -11,26 +11,23 @@ export const testing = (req, res) => {
 
 export const updateUser = async (req, res, next) => {
 const userId = req.user.id;
-if (userId !== req.params.id)
+
+if (userId.toString() !== req.params.id)
       return next(errorHandler(401, "You can only update your own account!"));
 
   try {
-    if (req.body.password && req.body.password.trim() !== "") {
-  req.body.password = bcryptjs.hashSync(req.body.password, 10);
-} else {
-  delete req.body.password;
-}
+    
    const updateUser = await User.findByIdAndUpdate(
   req.params.id,
   {
     $set: {
-      username: req.body.username,
-      email: req.body.email,
-      avatar: req.body.avatar,
-      ...(req.body.password && {
-        password: bcryptjs.hashSync(req.body.password, 10),
-      }),
-    },
+  username: req.body.username,
+  email: req.body.email,
+  avatar: req.body.avatar,
+  ...(req.body.password && {
+    password: bcryptjs.hashSync(req.body.password, 10),
+  }),
+}
   },
   { new: true }
 );
@@ -43,8 +40,8 @@ if (userId !== req.params.id)
 };
 
 export const deleteUser = async (req, res, next) => {
-const userId = req.user.id;
-if (userId !== req.params.id) {
+const userId = req.user.id?.toString();
+if (userId.toString() !== req.params.id) {
   return next(errorHandler(401, "You can only delete your own account"));
 }
 
@@ -59,8 +56,7 @@ if (userId !== req.params.id) {
 
 export const getUserListing = async (req, res, next) => {
   const userId = req.params.id;
-
-  if (req.user.id === userId) {
+if (req.user.id.toString() === userId) {
     try {
       const listings = await Listing.find({ userRef: userId });
       res.status(200).json(listings);
