@@ -51,7 +51,7 @@ export const verifyToken = (req, res, next) => {
     }
 
     
-    req.user = user;
+req.user = { id: user.id };
     next();
   });
 };
