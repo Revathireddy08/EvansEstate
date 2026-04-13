@@ -23,6 +23,10 @@ export default function Profile() {
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector((state) => state.user);
 
+  if (!currentUser?._id && !currentUser?.id) return null;
+
+  const userId = currentUser?._id || currentUser?.id;
+
   const [file, setFile] = useState(undefined);
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
@@ -31,8 +35,10 @@ export default function Profile() {
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
-const [showListings, setShowListings] = useState(false);
-const API = "https://evansestate.onrender.com";
+  const [showListings, setShowListings] = useState(false);
+
+  const API = "https://evansestate.onrender.com";
+
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
     const fileName = new Date().getTime() + file.name;
@@ -70,56 +76,52 @@ const API = "https://evansestate.onrender.com";
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  // ✅ FIXED UPDATE USER (METHOD ADDED)
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const confirmUpdate = window.confirm("Are you sure you want to update profile?");
-  if (!confirmUpdate) return;
+    const confirmUpdate = window.confirm("Are you sure you want to update profile?");
+    if (!confirmUpdate) return;
 
-  try {
-    dispatch(updateUserStart());
+    try {
+      dispatch(updateUserStart());
 
-    const res = await fetch(`${API}/api/user/update/${currentUser._id}`, {
-      method: "PUT",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+      const res = await fetch(`${API}/api/user/update/${userId}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      dispatch(updateUserFailure(data.message));
-      return;
+      if (!res.ok) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+
+      dispatch(updateuserSuccess(data));
+      setUpdateSuccess(true);
+
+      setSuccessMessage("Profile updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
     }
+  };
 
-    dispatch(updateuserSuccess(data));
-setUpdateSuccess(true);
+  const handleDeleteUser = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete your account?");
+    if (!confirmDelete) return;
 
-setSuccessMessage("Profile updated successfully!");
-setTimeout(() => setSuccessMessage(""), 3000);
-  } catch (error) {
-    dispatch(updateUserFailure(error.message));
-  }
-};
-
-const handleDeleteUser = async () => {
-  const confirmDelete = window.confirm("Are you sure you want to delete your account?");
-  if (!confirmDelete) return;
-
-      try {
+    try {
       dispatch(deleteUserStart());
 
-      const res = await fetch(
-        `${API}/api/user/delete/${currentUser._id}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${API}/api/user/delete/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       const data = await res.json();
 
@@ -128,55 +130,51 @@ const handleDeleteUser = async () => {
         return;
       }
 
-dispatch(deleteUserSuccess(data));
+      dispatch(deleteUserSuccess());
 
-setSuccessMessage("User has been deleted successfully!");
-setTimeout(() => setSuccessMessage(""), 3000);
       setSuccessMessage("User has been deleted successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
   };
 
-const handleSignOut = async () => {
-  const confirmLogout = window.confirm("Are you sure you want to sign out?");
-  if (!confirmLogout) return;
+  const handleSignOut = async () => {
+    const confirmLogout = window.confirm("Are you sure you want to sign out?");
+    if (!confirmLogout) return;
 
-      try {
+    try {
       dispatch(signOutUserStart());
 
-const res = await fetch(`${API}/api/auth/signout`, {
-  credentials: "include",
-});      const data = await res.json();
+      const res = await fetch(`${API}/api/auth/signout`, {
+        credentials: "include",
+      });
+
+      const data = await res.json();
 
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
 
-dispatch(deleteUserSuccess(data));
+      dispatch(deleteUserSuccess());
 
-setSuccessMessage("Signed out successfully!");
-setTimeout(() => setSuccessMessage(""), 3000); 
-
-setSuccessMessage("Signed out successfully!");
-setTimeout(() => setSuccessMessage(""), 3000);
+      setSuccessMessage("Signed out successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
   };
 
   const handleShowListings = async () => {
-     setShowListings(true);
+    setShowListings(true);
+
     try {
       setShowListingsError(false);
 
-      const res = await fetch(
-  `${API}/api/user/listings/${currentUser._id}`,
-  {
-    credentials: "include",
-  }
-);
+      const res = await fetch(`${API}/api/user/listings/${userId}`, {
+        credentials: "include",
+      });
 
       const data = await res.json();
 
@@ -191,18 +189,15 @@ setTimeout(() => setSuccessMessage(""), 3000);
     }
   };
 
-const handleListingDelete = async (listingId) => {
-  const confirmDelete = window.confirm("Are you sure you want to delete this listing?");
-  if (!confirmDelete) return;
+  const handleListingDelete = async (listingId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this listing?");
+    if (!confirmDelete) return;
 
-      try {
-      const res = await fetch(
-  `${API}/api/listing/delete/${listingId}`,
-  {
-    method: "DELETE",
-    credentials: "include",
-  }
-);
+    try {
+      const res = await fetch(`${API}/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       const data = await res.json();
 
@@ -257,13 +252,14 @@ const handleListingDelete = async (listingId) => {
           className="border p-3 rounded-lg"
           onChange={handleChange}
         />
+
         <input
-  type="password"
-  id="password"
-  placeholder="Enter new password"
-  className="border p-3 rounded-lg"
-  onChange={handleChange}
-/>
+          type="password"
+          id="password"
+          placeholder="Enter new password"
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
+        />
 
         <button
           disabled={loading}
@@ -293,50 +289,47 @@ const handleListingDelete = async (listingId) => {
         Show Listings
       </button>
 
-{showListings && (
-  <>
-    {showListingsError ? (
-      <p className="text-red-500 text-center mt-4">
-        Failed to load listings
-      </p>
-    ) : userListings.length === 0 ? (
-      <p className="text-gray-500 text-center mt-4">
-        No listings created yet
-      </p>
-    ) : (
-      userListings.map((listing) => (
-        <div
-          key={listing._id}
-          className="border p-3 flex justify-between mt-4 items-center"
-        >
-          <img
-            src={listing.imageUrls[0]}
-            className="w-16 h-16 object-cover rounded"
-            alt="listing"
-          />
+      {showListings && (
+        <>
+          {showListingsError ? (
+            <p className="text-red-500 text-center mt-4">Failed to load listings</p>
+          ) : userListings.length === 0 ? (
+            <p className="text-gray-500 text-center mt-4">No listings created yet</p>
+          ) : (
+            userListings.map((listing) => (
+              <div
+                key={listing._id}
+                className="border p-3 flex justify-between mt-4 items-center"
+              >
+                <img
+                  src={listing.imageUrls[0]}
+                  className="w-16 h-16 object-cover rounded"
+                  alt="listing"
+                />
 
-          <p className="flex-1 ml-3">{listing.name}</p>
+                <p className="flex-1 ml-3">{listing.name}</p>
 
-          <div className="flex gap-3">
-            <Link
-              to={`/update-listing/${listing._id}`}
-              className="text-green-700"
-            >
-              Edit
-            </Link>
+                <div className="flex gap-3">
+                  <Link
+                    to={`/update-listing/${listing._id}`}
+                    className="text-green-700"
+                  >
+                    Edit
+                  </Link>
 
-            <button
-              onClick={() => handleListingDelete(listing._id)}
-              className="text-red-700"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      ))
-    )}
-  </>
-)}
+                  <button
+                    onClick={() => handleListingDelete(listing._id)}
+                    className="text-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </>
+      )}
+
       <p className="text-green-700">{successMessage}</p>
       <p className="text-red-700">{error}</p>
     </div>
