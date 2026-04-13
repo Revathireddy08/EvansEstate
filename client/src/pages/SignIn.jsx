@@ -27,9 +27,10 @@ const [showPassword, setShowPassword] = useState(false);
       dispactch(signInStart());
       const res = await fetch("https://evansestate.onrender.com/api/auth/signin", {
         method: "POST",
+         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          credentials: "include"
+          
         },
         body: JSON.stringify(formData),
       });
