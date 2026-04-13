@@ -153,24 +153,16 @@ if (!currentUser) {
   try {
     dispatch(signOutUserStart());
 
-    const res = await fetch(`${API}/api/auth/signout`, {
+    await fetch(`${API}/api/auth/signout`, {
       credentials: "include",
     });
-
-    const data = await res.json();
-
-    if (data.success === false) {
-      dispatch(deleteUserFailure(data.message));
-      return;
-    }
 
     dispatch(signOutUserSuccess());
 
     setSuccessMessage("Signed out successfully!");
 
-    setTimeout(() => {
-      navigate("/signin");
-    }, 500); // small delay so message shows
+    navigate("/signin", { replace: true });
+
   } catch (error) {
     dispatch(deleteUserFailure(error.message));
   }
