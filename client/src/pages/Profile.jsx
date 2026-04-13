@@ -257,6 +257,13 @@ const handleListingDelete = async (listingId) => {
           className="border p-3 rounded-lg"
           onChange={handleChange}
         />
+        <input
+  type="password"
+  id="password"
+  placeholder="Enter new password"
+  className="border p-3 rounded-lg"
+  onChange={handleChange}
+/>
 
         <button
           disabled={loading}
