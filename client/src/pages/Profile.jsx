@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
@@ -23,7 +24,7 @@ export default function Profile() {
   const fileRef = useRef(null);
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector((state) => state.user);
-
+const navigate = useNavigate();
 if (!currentUser) {
   return (
     <div className="text-center mt-10 text-gray-500">
@@ -146,31 +147,34 @@ if (!currentUser) {
   };
 
   const handleSignOut = async () => {
-    const confirmLogout = window.confirm("Are you sure you want to sign out?");
-    if (!confirmLogout) return;
+  const confirmLogout = window.confirm("Are you sure you want to sign out?");
+  if (!confirmLogout) return;
 
-    try {
-      dispatch(signOutUserStart());
+  try {
+    dispatch(signOutUserStart());
 
-      const res = await fetch(`${API}/api/auth/signout`, {
-        credentials: "include",
-      });
+    const res = await fetch(`${API}/api/auth/signout`, {
+      credentials: "include",
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (data.success === false) {
-        dispatch(deleteUserFailure(data.message));
-        return;
-      }
-
-dispatch(signOutUserSuccess());
-navigate("/signin");
-      setSuccessMessage("Signed out successfully!");
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (error) {
-      dispatch(deleteUserFailure(error.message));
+    if (data.success === false) {
+      dispatch(deleteUserFailure(data.message));
+      return;
     }
-  };
+
+    dispatch(signOutUserSuccess());
+
+    setSuccessMessage("Signed out successfully!");
+
+    setTimeout(() => {
+      navigate("/signin");
+    }, 500); // small delay so message shows
+  } catch (error) {
+    dispatch(deleteUserFailure(error.message));
+  }
+};
 
   const handleShowListings = async () => {
     setShowListings(true);
