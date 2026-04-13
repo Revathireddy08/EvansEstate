@@ -12,6 +12,7 @@ import {
   deleteUserStart,
   deleteUserSuccess,
   signOutUserStart,
+  signOutUserSuccess,
   updateUserFailure,
   updateUserStart,
   updateuserSuccess,
@@ -23,8 +24,9 @@ export default function Profile() {
   const dispatch = useDispatch();
   const { currentUser, loading, error } = useSelector((state) => state.user);
 
-  if (!currentUser?._id && !currentUser?.id) return null;
-
+if (!currentUser?._id && !currentUser?.id) {
+  return <div>Loading...</div>;
+}
   const userId = currentUser?._id || currentUser?.id;
 
   const [file, setFile] = useState(undefined);
@@ -157,8 +159,7 @@ export default function Profile() {
         return;
       }
 
-      dispatch(deleteUserSuccess());
-
+dispatch(signOutUserSuccess());
       setSuccessMessage("Signed out successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
@@ -232,7 +233,7 @@ export default function Profile() {
 
         <img
           onClick={() => fileRef.current.click()}
-          src={formData.avatar || currentUser.avatar}
+          src={formData.avatar || currentUser?.avatar}
           alt="profile"
           className="rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2"
         />
@@ -240,7 +241,7 @@ export default function Profile() {
         <input
           type="text"
           id="username"
-          defaultValue={currentUser.username || currentUser.name}
+          defaultValue={currentUser?.username || currentUser?.name}
           className="border p-3 rounded-lg"
           onChange={handleChange}
         />
@@ -248,7 +249,7 @@ export default function Profile() {
         <input
           type="email"
           id="email"
-          defaultValue={currentUser.email}
+          defaultValue={currentUser?.email}
           className="border p-3 rounded-lg"
           onChange={handleChange}
         />
