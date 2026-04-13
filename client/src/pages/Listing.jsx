@@ -54,8 +54,11 @@ const res = await fetch(`https://evansestate.onrender.com/api/listing/get/${para
 
   return (
     <main>
-      {loading && <p className="text-center my-7 text-2xl">{<Spinner />}</p>},
-      {error && (
+{loading && (
+  <div className="text-center my-7 text-2xl">
+    <Spinner />
+  </div>
+)}      {error && (
         <p className="text-center my-7 text-2xl">Something Went Wrong...!</p>
       )}
       {listing && !loading && !error && (
