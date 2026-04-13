@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 export default function Contact({ listing }) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState('');
 const { currentUser } = useSelector((state) => state.user);
+const navigate = useNavigate();
   const onChange = (e) => {
     setMessage(e.target.value);
   };
@@ -26,13 +29,9 @@ const res = await fetch(`https://evansestate.onrender.com/api/user/${listing.use
       `Regarding ${listing?.name}`
     )}&body=${encodeURIComponent(message)}`
   : "#";
-  return (
+ return (
   <>
-    {!currentUser ? (
-      <p className="text-center text-red-600 font-semibold">
-        Login to contact landlord
-      </p>
-    ) : landlord ? (
+    {landlord && (
       <div className="flex flex-col gap-2">
         <p>
           Contact{" "}
@@ -53,18 +52,30 @@ const res = await fetch(`https://evansestate.onrender.com/api/user/${listing.use
           className="w-full border p-3 rounded-lg"
         />
 
-        <a
-          href={mailLink}
-          className="bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95"
-        >
-          Send Message
-        </a>
+       <a
+  href={mailLink || "#"}
+  onClick={(e) => {
+    if (!currentUser) {
+      e.preventDefault();
+      alert("Please sign in to contact landlord");
+      navigate("/sign-in");
+      return;
+    }
+
+    if (!message.trim()) {
+      e.preventDefault();
+      alert("Please enter a message");
+    }
+  }}
+  className="bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95"
+>
+  Send Message
+</a>
       </div>
-    ) : null}
+    )}
   </>
 );
 }
-
 Contact.propTypes = {
   listing: PropTypes.shape({
     userRef: PropTypes.string.isRequired,
